@@ -13,7 +13,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME = "classes";
 
     public DatabaseHelper(Context context) {
-        super(context, DB_NAME, null, 1);
+        // Change the version from 1 to 2
+        super(context, DB_NAME, null, 2);
     }
 
     @Override
@@ -37,10 +38,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Drop both tables
+        db.execSQL("DROP TABLE IF EXISTS instances");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        // Recreate the database
         onCreate(db);
     }
-
     public List<YogaClass> getAllClasses() {
         List<YogaClass> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();

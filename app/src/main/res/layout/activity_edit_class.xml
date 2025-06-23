@@ -1,0 +1,48 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="Edit Yoga Class"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:id="@+id/spinnerDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etTime" android:hint="Time (e.g. 10:00)"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etCapacity" android:hint="Capacity"
+            android:inputType="number" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etDuration" android:hint="Duration (e.g. 60 min)"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etPrice" android:hint="Price (£)"
+            android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etType" android:hint="Type (e.g. Flow Yoga)"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <EditText android:id="@+id/etDescription" android:hint="Description (Optional)"
+            android:inputType="textMultiLine" android:minLines="2" android:maxLines="4"
+            android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <Button android:id="@+id/btnUpdate" android:text="Update Class"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>

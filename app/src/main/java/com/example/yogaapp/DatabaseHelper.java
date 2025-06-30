@@ -92,4 +92,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return list;
     }
+
+    public int deleteInstanceById(int instanceId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("instances", "id = ?", new String[]{String.valueOf(instanceId)});
+    }
+
+    public ClassInstance getInstanceById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM instances WHERE id = ?", new String[]{String.valueOf(id)});
+        ClassInstance instance = null;
+        if (cursor.moveToFirst()) {
+            instance = new ClassInstance();
+            instance.id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            instance.classId = cursor.getInt(cursor.getColumnIndexOrThrow("class_id"));
+            instance.date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+            instance.teacher = cursor.getString(cursor.getColumnIndexOrThrow("teacher"));
+            instance.comment = cursor.getString(cursor.getColumnIndexOrThrow("comment"));
+        }
+        cursor.close();
+        return instance;
+    }
+
 }

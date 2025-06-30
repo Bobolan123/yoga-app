@@ -1,43 +1,53 @@
 package com.example.yogaapp;
 
-import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.os.Bundle;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InstanceListActivity extends AppCompatActivity {
 
-    int classId;
-    ListView listView;
-    Button btnAddInstance;
-    List<ClassInstance> instanceList;
-    DatabaseHelper dbHelper;
-    ArrayAdapter<ClassInstance> adapter;
+    private int classId;
+    private ListView listView;
+    private Button btnAddInstance;
+    private List<ClassInstance> instanceList;
+    private DatabaseHelper dbHelper;
+    private ClassInstanceAdapter adapter;
+    private EditText etSearch;
+    private List<ClassInstance> allInstances;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_instance_list);
 
+        // Get extras from intent
         classId = getIntent().getIntExtra("classId", -1);
         String className = getIntent().getStringExtra("className");
 
-        ((TextView) findViewById(R.id.tvClassHeader)).setText("Instances for: " + className);
+        if (classId == -1) {
+            Toast.makeText(this, "Invalid class ID", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Set header
+        TextView tvHeader = findViewById(R.id.tvClassHeader);
+        tvHeader.setText("Instances for: " + className);
 
         listView = findViewById(R.id.listInstances);
         btnAddInstance = findViewById(R.id.btnAddInstance);
         dbHelper = new DatabaseHelper(this);
 
-        instanceList = dbHelper.getInstancesForClass(classId);
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, instanceList);
+        // ✅ Safe list and adapter setup
+        instanceList = new ArrayList<>();
+        adapter = new ClassInstanceAdapter(this, instanceList, dbHelper);
         listView.setAdapter(adapter);
 
+        // Add new instance button
         btnAddInstance.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddClassInstanceActivity.class);
             intent.putExtra("classId", classId);
@@ -48,8 +58,12 @@ public class InstanceListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Refresh data safely
         instanceList.clear();
         instanceList.addAll(dbHelper.getInstancesForClass(classId));
         adapter.notifyDataSetChanged();
     }
+
+
 }

@@ -13,6 +13,9 @@
         android:theme="@style/Theme.YogaApp"
         tools:targetApi="31">
         <activity
+            android:name=".EditInstanceActivity"
+            android:exported="false" />
+        <activity
             android:name=".InstanceListActivity"
             android:exported="false" />
         <activity

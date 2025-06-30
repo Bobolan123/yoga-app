@@ -55,12 +55,27 @@ public class AddClassInstanceActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (!weekday.equalsIgnoreCase(classScheduledDay)) {
-                    Toast.makeText(this, "Date does not match class's scheduled day (" + classScheduledDay + ")", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                try {
+                    Calendar inputCal = Calendar.getInstance();
+                    inputCal.setTime(sdf.parse(inputDate));
 
-                saveInstance(inputDate, etTeacher.getText().toString(), etComment.getText().toString());
+                    Calendar today = Calendar.getInstance();
+                    today.set(Calendar.HOUR_OF_DAY, 0);
+                    today.set(Calendar.MINUTE, 0);
+                    today.set(Calendar.SECOND, 0);
+                    today.set(Calendar.MILLISECOND, 0);
+
+                    if (inputCal.before(today)) {
+                        Toast.makeText(this, "Date must be after today", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    saveInstance(inputDate, etTeacher.getText().toString(), etComment.getText().toString());
+
+                } catch (ParseException e) {
+                    Toast.makeText(this, "Invalid date format (yyyy-MM-dd)", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
             }

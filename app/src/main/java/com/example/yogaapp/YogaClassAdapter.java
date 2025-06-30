@@ -1,5 +1,6 @@
 package com.example.yogaapp;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -77,19 +78,27 @@ public class YogaClassAdapter extends BaseAdapter {
 
         // Delete Class
         btnDelete.setOnClickListener(v -> {
-            try {
-                int deleted = dbHelper.deleteClassById(yogaClass.id);
-                if (deleted > 0) {
-                    classList.remove(position);
-                    notifyDataSetChanged();
-                    Toast.makeText(context, "Class deleted successfully", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(context, "Failed to delete class", Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                Toast.makeText(context, "Error: Unable to delete class", Toast.LENGTH_SHORT).show();
-            }
+            new AlertDialog.Builder(context)
+                    .setTitle("Delete Class")
+                    .setMessage("Are you sure you want to delete this class and all its instances?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        try {
+                            int deleted = dbHelper.deleteClassById(yogaClass.id);
+                            if (deleted > 0) {
+                                classList.remove(position);
+                                notifyDataSetChanged();
+                                Toast.makeText(context, "Class deleted successfully", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Failed to delete class", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(context, "Error: Unable to delete class", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
         });
+
 
         return convertView;
     }

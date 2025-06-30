@@ -14,6 +14,15 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
+    <EditText
+        android:id="@+id/etSearchInstance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search by teacher, date, or day"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:padding="8dp"
+        android:layout_marginBottom="12dp"/>
+
     <Button
         android:id="@+id/btnAddInstance"
         android:layout_width="match_parent"

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "YogaClasses.db";
@@ -113,5 +114,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return instance;
     }
+
+    public List<ClassInstance> searchInstances(int classId, String query) {
+        List<ClassInstance> results = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String sql = "SELECT * FROM instances WHERE class_id = ? AND (" +
+                "LOWER(teacher) LIKE ? OR " +
+                "date LIKE ?)";
+        String queryLower = "%" + query.toLowerCase(Locale.getDefault()) + "%";
+        String queryDate = "%" + query + "%";
+
+        Cursor cursor = db.rawQuery(sql, new String[]{
+                String.valueOf(classId),
+                queryLower,
+                queryDate
+        });
+
+        if (cursor.moveToFirst()) {
+            do {
+                ClassInstance instance = new ClassInstance();
+                instance.id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                instance.classId = cursor.getInt(cursor.getColumnIndexOrThrow("class_id"));
+                instance.date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                instance.teacher = cursor.getString(cursor.getColumnIndexOrThrow("teacher"));
+                instance.comment = cursor.getString(cursor.getColumnIndexOrThrow("comment"));
+                results.add(instance);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return results;
+    }
+
 
 }

@@ -85,6 +85,11 @@ public class EditInstanceActivity extends AppCompatActivity {
                     return;
                 }
 
+                if (!weekday.equalsIgnoreCase(classScheduledDay)) {
+                    Toast.makeText(this, "Date does not match class's scheduled day (" + classScheduledDay + ")", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 updateInstance(instanceId, inputDate, etTeacher.getText().toString(), etComment.getText().toString());
 
             } catch (ParseException e) {

@@ -72,6 +72,20 @@ public class ClassInstanceAdapter extends BaseAdapter {
                     .show();
         });
 
+        convertView.setOnClickListener(v -> {
+            new AlertDialog.Builder(context)
+                    .setTitle("Instance Details")
+                    .setMessage(
+                            "Date: " + instance.date + "\n" +
+                                    "Teacher: " + instance.teacher + "\n" +
+                                    "Comment: " + (instance.comment == null ? "None" : instance.comment)
+                    )
+                    .setPositiveButton("OK", null)
+                    .show();
+        });
+
         return convertView;
     }
+
+
 }

@@ -1,11 +1,17 @@
 package com.example.yogaapp;
 
+import android.app.DatePickerDialog;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.widget.*;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,135 +19,221 @@ import java.util.*;
 
 public class EditInstanceActivity extends AppCompatActivity {
 
-    EditText etDate, etTeacher, etComment;
-    Button btnSaveInstance;
-
-    DatabaseHelper dbHelper;
-    int instanceId;
-    int classId;
-    String classScheduledDay;
+    private TextInputEditText editInstanceDateField, editInstructorNameField, editInstanceNotesField;
+    private MaterialButton updateInstanceButton;
+    private DatabaseHelper databaseHelper;
+    private int classInstanceIdentifier;
+    private int parentClassIdentifier;
+    private String parentClassScheduleDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_class_instance); // reuse same layout
+        setContentView(R.layout.activity_edit_instance);
 
-        etDate = findViewById(R.id.etDate);
-        etTeacher = findViewById(R.id.etTeacher);
-        etComment = findViewById(R.id.etComment);
-        btnSaveInstance = findViewById(R.id.btnSaveInstance);
-        btnSaveInstance.setText("Update Instance");
+        initializeActivityComponents();
+        retrieveInstanceIdentifier();
+        loadExistingInstanceData();
+        configureDatePickerFunctionality();
+        configureUpdateButtonBehavior();
+    }
 
-        dbHelper = new DatabaseHelper(this);
+    private void initializeActivityComponents() {
+        editInstanceDateField = findViewById(R.id.etEditInstanceDate);
+        editInstructorNameField = findViewById(R.id.etEditInstructorName);
+        editInstanceNotesField = findViewById(R.id.etEditInstanceNotes);
+        updateInstanceButton = findViewById(R.id.btnUpdateInstance);
+        databaseHelper = new DatabaseHelper(this);
+    }
 
-        instanceId = getIntent().getIntExtra("instanceId", -1);
-        if (instanceId == -1) {
-            Toast.makeText(this, "Invalid instance ID", Toast.LENGTH_SHORT).show();
+    private void retrieveInstanceIdentifier() {
+        classInstanceIdentifier = getIntent().getIntExtra("instanceId", -1);
+        
+        if (classInstanceIdentifier == -1) {
+            displayUserMessage("Invalid instance identifier provided");
+            finish();
+        }
+    }
+
+    private void loadExistingInstanceData() {
+        ClassInstance existingInstance = databaseHelper.getInstanceById(classInstanceIdentifier);
+        
+        if (existingInstance == null) {
+            displayUserMessage("Instance data not found");
             finish();
             return;
         }
 
-        // Load existing data
-        ClassInstance instance = dbHelper.getInstanceById(instanceId);
-        if (instance == null) {
-            Toast.makeText(this, "Instance not found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        parentClassIdentifier = existingInstance.classId;
+        parentClassScheduleDay = retrieveParentClassScheduleDay(parentClassIdentifier);
 
-        classId = instance.classId;
-        classScheduledDay = getScheduledDayOfClass(classId);
+        populateInstanceFields(existingInstance);
+    }
 
-        etDate.setText(instance.date);
-        etTeacher.setText(instance.teacher);
-        etComment.setText(instance.comment);
+    private void populateInstanceFields(ClassInstance instance) {
+        editInstanceDateField.setText(instance.date);
+        editInstructorNameField.setText(instance.teacher != null ? instance.teacher : "");
+        editInstanceNotesField.setText(instance.comment != null ? instance.comment : "");
+    }
 
-        btnSaveInstance.setOnClickListener(v -> {
-            if (!validateInputs()) {
-                Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void configureDatePickerFunctionality() {
+        editInstanceDateField.setOnClickListener(v -> presentDatePickerDialog());
+    }
 
-            String inputDate = etDate.getText().toString();
-            String weekday = getWeekdayFromDate(inputDate);
-            if (weekday == null) {
-                Toast.makeText(this, "Invalid date format (yyyy-MM-dd)", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void presentDatePickerDialog() {
+        Calendar currentDate = Calendar.getInstance();
+        
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+            this,
+            (view, selectedYear, selectedMonth, selectedDay) -> {
+                String formattedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", 
+                    selectedYear, selectedMonth + 1, selectedDay);
+                editInstanceDateField.setText(formattedDate);
+            },
+            currentDate.get(Calendar.YEAR),
+            currentDate.get(Calendar.MONTH),
+            currentDate.get(Calendar.DAY_OF_MONTH)
+        );
+        
+        datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+        datePickerDialog.show();
+    }
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            try {
-                Calendar inputCal = Calendar.getInstance();
-                inputCal.setTime(sdf.parse(inputDate));
-
-                Calendar today = Calendar.getInstance();
-                today.set(Calendar.HOUR_OF_DAY, 0);
-                today.set(Calendar.MINUTE, 0);
-                today.set(Calendar.SECOND, 0);
-                today.set(Calendar.MILLISECOND, 0);
-
-                if (inputCal.before(today)) {
-                    Toast.makeText(this, "Date must be after today", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (!weekday.equalsIgnoreCase(classScheduledDay)) {
-                    Toast.makeText(this, "Date does not match class's scheduled day (" + classScheduledDay + ")", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                updateInstance(instanceId, inputDate, etTeacher.getText().toString(), etComment.getText().toString());
-
-            } catch (ParseException e) {
-                Toast.makeText(this, "Invalid date format (yyyy-MM-dd)", Toast.LENGTH_SHORT).show();
+    private void configureUpdateButtonBehavior() {
+        updateInstanceButton.setOnClickListener(v -> {
+            if (performInputValidation()) {
+                presentUpdateConfirmationDialog();
             }
         });
     }
 
-    private boolean validateInputs() {
-        return !etDate.getText().toString().isEmpty()
-                && !etTeacher.getText().toString().isEmpty();
+    private boolean performInputValidation() {
+        if (extractFieldText(editInstanceDateField).isEmpty()) {
+            editInstanceDateField.setError("Instance date is required");
+            editInstanceDateField.requestFocus();
+            return false;
+        }
+
+        String selectedDate = extractFieldText(editInstanceDateField);
+        String weekdayFromDate = extractWeekdayFromDate(selectedDate);
+        
+        if (weekdayFromDate == null) {
+            editInstanceDateField.setError("Invalid date format");
+            editInstanceDateField.requestFocus();
+            return false;
+        }
+
+        if (!validateDateIsInFuture(selectedDate)) {
+            editInstanceDateField.setError("Date must be in the future");
+            editInstanceDateField.requestFocus();
+            return false;
+        }
+
+        if (!weekdayFromDate.equalsIgnoreCase(parentClassScheduleDay)) {
+            editInstanceDateField.setError("Date must match class schedule day (" + parentClassScheduleDay + ")");
+            editInstanceDateField.requestFocus();
+            return false;
+        }
+
+        if (extractFieldText(editInstructorNameField).isEmpty()) {
+            editInstructorNameField.setError("Instructor name is required");
+            editInstructorNameField.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
-    private void updateInstance(int id, String date, String teacher, String comment) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("date", date);
-        values.put("teacher", teacher);
-        values.put("comment", comment);
+    private boolean validateDateIsInFuture(String dateString) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Calendar selectedCalendar = Calendar.getInstance();
+            selectedCalendar.setTime(dateFormat.parse(dateString));
 
-        int result = db.update("instances", values, "id = ?", new String[]{String.valueOf(id)});
-        if (result > 0) {
-            Toast.makeText(this, "Instance updated!", Toast.LENGTH_SHORT).show();
+            Calendar todayCalendar = Calendar.getInstance();
+            todayCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            todayCalendar.set(Calendar.MINUTE, 0);
+            todayCalendar.set(Calendar.SECOND, 0);
+            todayCalendar.set(Calendar.MILLISECOND, 0);
+
+            return !selectedCalendar.before(todayCalendar);
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    private void presentUpdateConfirmationDialog() {
+        String confirmationSummary = constructUpdateSummary();
+        
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm Instance Updates")
+                .setMessage(confirmationSummary)
+                .setPositiveButton("Update Instance", (dialog, which) -> executeInstanceUpdate())
+                .setNegativeButton("Review Changes", null)
+                .show();
+    }
+
+    private String constructUpdateSummary() {
+        return "Date: " + extractFieldText(editInstanceDateField) + "\n" +
+               "Instructor: " + extractFieldText(editInstructorNameField) + "\n" +
+               "Notes: " + (extractFieldText(editInstanceNotesField).isEmpty() ? 
+                           "No additional notes" : extractFieldText(editInstanceNotesField));
+    }
+
+    private void executeInstanceUpdate() {
+        SQLiteDatabase writableDatabase = databaseHelper.getWritableDatabase();
+        ContentValues updatedValues = new ContentValues();
+        
+        updatedValues.put("date", extractFieldText(editInstanceDateField));
+        updatedValues.put("teacher", extractFieldText(editInstructorNameField));
+        updatedValues.put("comment", extractFieldText(editInstanceNotesField));
+
+        int updateResult = writableDatabase.update(
+            "instances", 
+            updatedValues, 
+            "id = ?", 
+            new String[]{String.valueOf(classInstanceIdentifier)}
+        );
+
+        if (updateResult > 0) {
+            displayUserMessage("Class instance updated successfully!");
             finish();
         } else {
-            Toast.makeText(this, "Failed to update", Toast.LENGTH_SHORT).show();
+            displayUserMessage("Failed to update instance. Please try again.");
         }
     }
 
-    private ClassInstance getInstanceById(int id) {
-        return dbHelper.getInstanceById(id);
-    }
-
-    private String getScheduledDayOfClass(int classId) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT day FROM classes WHERE id = ?", new String[]{String.valueOf(classId)});
-        String result = "";
-        if (cursor.moveToFirst()) {
-            result = cursor.getString(cursor.getColumnIndexOrThrow("day"));
+    private String retrieveParentClassScheduleDay(int classId) {
+        SQLiteDatabase readableDatabase = databaseHelper.getReadableDatabase();
+        Cursor classCursor = readableDatabase.rawQuery(
+            "SELECT day FROM classes WHERE id = ?", 
+            new String[]{String.valueOf(classId)}
+        );
+        
+        String scheduleDay = "";
+        if (classCursor.moveToFirst()) {
+            scheduleDay = classCursor.getString(classCursor.getColumnIndexOrThrow("day"));
         }
-        cursor.close();
-        return result;
+        classCursor.close();
+        return scheduleDay;
     }
 
-    private String getWeekdayFromDate(String dateString) {
+    private String extractWeekdayFromDate(String dateString) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(sdf.parse(dateString));
-            return cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dateFormat.parse(dateString));
+            return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
         } catch (ParseException e) {
             return null;
         }
+    }
+
+    private String extractFieldText(TextInputEditText field) {
+        return field.getText() != null ? field.getText().toString().trim() : "";
+    }
+
+    private void displayUserMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,148 +1,185 @@
 package com.example.yogaapp;
 
-import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
-import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class AddClassActivity extends AppCompatActivity {
-    EditText etTime, etCapacity, etDuration, etPrice, etType, etDescription;
-    Button btnSave;
-    Spinner spinnerDay;
-
-
-    DatabaseHelper dbHelper;
+    
+    private AutoCompleteTextView scheduleDay;
+    private TextInputEditText sessionTime, maxParticipants, sessionDuration, 
+                             sessionFee, sessionCategory, sessionDescription;
+    private MaterialButton createSessionButton;
+    private DatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_class);
 
-        dbHelper = new DatabaseHelper(this);
-
-        spinnerDay = findViewById(R.id.spinnerDay);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerDay.setAdapter(adapter);
-        etTime = findViewById(R.id.etTime);
-        etCapacity = findViewById(R.id.etCapacity);
-        etDuration = findViewById(R.id.etDuration);
-        etPrice = findViewById(R.id.etPrice);
-        etType = findViewById(R.id.etType);
-        etDescription = findViewById(R.id.etDescription);
-        btnSave = findViewById(R.id.btnSave);
-
-        btnSave.setOnClickListener(v -> {
-            if (validateInputs()) {
-                String summary = "Day: " + spinnerDay.getSelectedItem().toString() + "\n" +
-                        "Time: " + etTime.getText().toString().trim() + "\n" +
-                        "Capacity: " + etCapacity.getText().toString().trim() + "\n" +
-                        "Duration: " + etDuration.getText().toString().trim() + "\n" +
-                        "Price: " + etPrice.getText().toString().trim() + "\n" +
-                        "Type: " + etType.getText().toString().trim() + "\n" +
-                        "Description: " + etDescription.getText().toString().trim();
-
-                new androidx.appcompat.app.AlertDialog.Builder(AddClassActivity.this)
-                        .setTitle("Confirm Class Details")
-                        .setMessage(summary)
-                        .setPositiveButton("Confirm", (dialog, which) -> saveData())
-                        .setNegativeButton("Cancel", null)
-                        .show();
-            }
-        });
-
-
+        initializeComponents();
+        setupScheduleDayDropdown();
+        setupCreateSessionButton();
     }
 
-    private boolean validateInputs() {
-        if (spinnerDay.getSelectedItemPosition() == AdapterView.INVALID_POSITION) {
-            Toast.makeText(this, "Please select a day", Toast.LENGTH_SHORT).show();
+    private void initializeComponents() {
+        scheduleDay = findViewById(R.id.actvScheduleDay);
+        sessionTime = findViewById(R.id.etSessionTime);
+        maxParticipants = findViewById(R.id.etMaxParticipants);
+        sessionDuration = findViewById(R.id.etSessionDuration);
+        sessionFee = findViewById(R.id.etSessionFee);
+        sessionCategory = findViewById(R.id.etSessionCategory);
+        sessionDescription = findViewById(R.id.etSessionDescription);
+        createSessionButton = findViewById(R.id.btnCreateSession);
+        databaseHelper = new DatabaseHelper(this);
+    }
+
+    private void setupScheduleDayDropdown() {
+        String[] weekDays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        ArrayAdapter<String> dayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, weekDays);
+        scheduleDay.setAdapter(dayAdapter);
+    }
+
+    private void setupCreateSessionButton() {
+        createSessionButton.setOnClickListener(v -> {
+            if (validateSessionInputs()) {
+                showConfirmationDialog();
+            }
+        });
+    }
+
+    private boolean validateSessionInputs() {
+        if (getTextFromField(scheduleDay).isEmpty()) {
+            displayError("Please select a schedule day");
             return false;
         }
 
-        if (etTime.getText().toString().trim().isEmpty()) {
-            etTime.setError("Time is required");
+        if (getTextFromField(sessionTime).isEmpty()) {
+            sessionTime.setError("Session time is required");
+            sessionTime.requestFocus();
             return false;
         }
 
-        if (etCapacity.getText().toString().trim().isEmpty()) {
-            etCapacity.setError("Capacity is required");
+        String participantsText = getTextFromField(maxParticipants);
+        if (participantsText.isEmpty()) {
+            maxParticipants.setError("Maximum participants is required");
+            maxParticipants.requestFocus();
             return false;
-        } else {
-            try {
-                int capacity = Integer.parseInt(etCapacity.getText().toString().trim());
-                if (capacity <= 0) {
-                    etCapacity.setError("Capacity must be a positive number");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                etCapacity.setError("Invalid number");
+        }
+
+        try {
+            int participants = Integer.parseInt(participantsText);
+            if (participants <= 0) {
+                maxParticipants.setError("Participants must be greater than 0");
+                maxParticipants.requestFocus();
                 return false;
             }
-        }
-
-        if (etDuration.getText().toString().trim().isEmpty()) {
-            etDuration.setError("Duration is required");
+        } catch (NumberFormatException e) {
+            maxParticipants.setError("Please enter a valid number");
+            maxParticipants.requestFocus();
             return false;
         }
 
-        if (etPrice.getText().toString().trim().isEmpty()) {
-            etPrice.setError("Price is required");
+        if (getTextFromField(sessionDuration).isEmpty()) {
+            sessionDuration.setError("Session duration is required");
+            sessionDuration.requestFocus();
             return false;
-        } else {
-            try {
-                float price = Float.parseFloat(etPrice.getText().toString().trim());
-                if (price < 0) {
-                    etPrice.setError("Price must be non-negative");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                etPrice.setError("Invalid price");
+        }
+
+        String feeText = getTextFromField(sessionFee);
+        if (feeText.isEmpty()) {
+            sessionFee.setError("Session fee is required");
+            sessionFee.requestFocus();
+            return false;
+        }
+
+        try {
+            float fee = Float.parseFloat(feeText);
+            if (fee < 0) {
+                sessionFee.setError("Fee cannot be negative");
+                sessionFee.requestFocus();
                 return false;
             }
+        } catch (NumberFormatException e) {
+            sessionFee.setError("Please enter a valid amount");
+            sessionFee.requestFocus();
+            return false;
         }
 
-        if (etType.getText().toString().trim().isEmpty()) {
-            etType.setError("Type is required");
+        if (getTextFromField(sessionCategory).isEmpty()) {
+            sessionCategory.setError("Session category is required");
+            sessionCategory.requestFocus();
             return false;
         }
 
         return true;
     }
 
+    private void showConfirmationDialog() {
+        String confirmationMessage = buildConfirmationMessage();
+        
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm Session Details")
+                .setMessage(confirmationMessage)
+                .setPositiveButton("Create Session", (dialog, which) -> saveSessionData())
+                .setNegativeButton("Review", null)
+                .show();
+    }
 
-    private void saveData() {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("day", spinnerDay.getSelectedItem().toString());
-        values.put("time", etTime.getText().toString());
-        values.put("capacity", Integer.parseInt(etCapacity.getText().toString()));
-        values.put("duration", etDuration.getText().toString());
-        values.put("price", Float.parseFloat(etPrice.getText().toString()));
-        values.put("type", etType.getText().toString());
-        values.put("description", etDescription.getText().toString());
+    private String buildConfirmationMessage() {
+        return "Schedule Day: " + getTextFromField(scheduleDay) + "\n" +
+               "Time: " + getTextFromField(sessionTime) + "\n" +
+               "Max Participants: " + getTextFromField(maxParticipants) + "\n" +
+               "Duration: " + getTextFromField(sessionDuration) + "\n" +
+               "Fee: £" + getTextFromField(sessionFee) + "\n" +
+               "Category: " + getTextFromField(sessionCategory) + "\n" +
+               "Description: " + getTextFromField(sessionDescription);
+    }
 
-        long result = db.insert(DatabaseHelper.TABLE_NAME, null, values);
-        if (result != -1) {
-            Toast.makeText(this, "Class Saved!", Toast.LENGTH_SHORT).show();
+    private void saveSessionData() {
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        ContentValues sessionValues = new ContentValues();
+        
+        sessionValues.put("day", getTextFromField(scheduleDay));
+        sessionValues.put("time", getTextFromField(sessionTime));
+        sessionValues.put("capacity", Integer.parseInt(getTextFromField(maxParticipants)));
+        sessionValues.put("duration", getTextFromField(sessionDuration));
+        sessionValues.put("price", Float.parseFloat(getTextFromField(sessionFee)));
+        sessionValues.put("type", getTextFromField(sessionCategory));
+        sessionValues.put("description", getTextFromField(sessionDescription));
+
+        long insertResult = database.insert(DatabaseHelper.TABLE_NAME, null, sessionValues);
+        
+        if (insertResult != -1) {
+            displaySuccess("Wellness session created successfully!");
             finish();
         } else {
-            Toast.makeText(this, "Failed to save!", Toast.LENGTH_SHORT).show();
+            displayError("Failed to create session. Please try again.");
         }
+    }
+
+    private String getTextFromField(TextInputEditText field) {
+        return field.getText() != null ? field.getText().toString().trim() : "";
+    }
+
+    private String getTextFromField(AutoCompleteTextView field) {
+        return field.getText() != null ? field.getText().toString().trim() : "";
+    }
+
+    private void displayError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void displaySuccess(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,38 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/primary_background">
 
-    <TextView
-        android:id="@+id/tvClassHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Instances for:"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
-
-    <EditText
-        android:id="@+id/etSearchInstance"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search by teacher, date, or day"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:padding="8dp"
-        android:layout_marginBottom="12dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="20dp"
+        android:background="@color/card_background"
+        android:elevation="2dp">
 
-    <Button
-        android:id="@+id/btnAddInstance"
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            android:tint="@color/accent_color"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:id="@+id/tvClassHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Session Instances"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_text" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Class Instance"
-        android:layout_marginBottom="16dp" />
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-    <ListView
-        android:id="@+id/listInstances"
+        <EditText
+            android:id="@+id/etSearchInstance"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:hint="Search instances..."
+            android:background="@drawable/search_background"
+            android:padding="12dp"
+            android:layout_marginEnd="12dp"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAddInstance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_input_add"
+            app:tint="@color/white"
+            app:backgroundTint="@color/accent_color"
+            app:fabSize="mini" />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/instanceRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:layout_margin="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvEmptyState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="64dp"
+        android:text="No session instances found.\nTap + to create your first instance."
+        android:textSize="16sp"
+        android:textColor="@color/secondary_text"
+        android:textAlignment="center"
+        android:visibility="gone" />
+
 </LinearLayout>

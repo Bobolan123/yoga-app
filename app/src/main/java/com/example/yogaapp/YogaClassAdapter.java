@@ -8,98 +8,131 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
-public class YogaClassAdapter extends BaseAdapter {
-    private Context context;
-    private List<YogaClass> classList;
-    private DatabaseHelper dbHelper;
+public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.SessionViewHolder> {
+    private Context appContext;
+    private List<YogaClass> sessionsList;
+    private DatabaseHelper dataHelper;
 
-    public YogaClassAdapter(Context context, List<YogaClass> classList, DatabaseHelper dbHelper) {
-        this.context = context;
-        this.classList = classList;
-        this.dbHelper = dbHelper;
+    public YogaClassAdapter(Context context, List<YogaClass> sessionsList, DatabaseHelper dataHelper) {
+        this.appContext = context;
+        this.sessionsList = sessionsList;
+        this.dataHelper = dataHelper;
+    }
+
+    @NonNull
+    @Override
+    public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(appContext).inflate(R.layout.item_yoga_class, parent, false);
+        return new SessionViewHolder(itemView);
     }
 
     @Override
-    public int getCount() {
-        return classList.size();
+    public void onBindViewHolder(@NonNull SessionViewHolder holder, int position) {
+        YogaClass currentSession = sessionsList.get(position);
+        holder.bindSessionData(currentSession, position);
     }
 
     @Override
-    public Object getItem(int position) {
-        return classList.get(position);
+    public int getItemCount() {
+        return sessionsList.size();
     }
 
-    @Override
-    public long getItemId(int position) {
-        return classList.get(position).id;
-    }
+    public class SessionViewHolder extends RecyclerView.ViewHolder {
+        private TextView sessionTitle, sessionSchedule, sessionFee, sessionCapacity, sessionDuration, sessionTypeIcon;
+        private ImageView viewInstancesButton, editSessionButton, deleteSessionButton;
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        YogaClass yogaClass = classList.get(position);
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_yoga_class, parent, false);
+        public SessionViewHolder(@NonNull View itemView) {
+            super(itemView);
+            initializeViewElements();
         }
 
-        TextView tvClassInfo = convertView.findViewById(R.id.tvClassInfo);
-        ImageView btnEdit = convertView.findViewById(R.id.btnEdit);
-        ImageView btnDelete = convertView.findViewById(R.id.btnDelete);
-        ImageView btnViewInstances = convertView.findViewById(R.id.btnViewInstances);
+        private void initializeViewElements() {
+            sessionTitle = itemView.findViewById(R.id.tvSessionTitle);
+            sessionSchedule = itemView.findViewById(R.id.tvSessionSchedule);
+            sessionFee = itemView.findViewById(R.id.tvSessionFee);
+            sessionCapacity = itemView.findViewById(R.id.tvSessionCapacity);
+            sessionDuration = itemView.findViewById(R.id.tvSessionDuration);
+            sessionTypeIcon = itemView.findViewById(R.id.tvSessionTypeIcon);
+            viewInstancesButton = itemView.findViewById(R.id.btnViewSessionInstances);
+            editSessionButton = itemView.findViewById(R.id.btnEditSession);
+            deleteSessionButton = itemView.findViewById(R.id.btnDeleteSession);
+        }
 
-        // Display info (customize as needed)
-        tvClassInfo.setText(yogaClass.type);
+        public void bindSessionData(YogaClass session, int position) {
+            populateSessionInfo(session);
+            setupActionButtons(session, position);
+        }
 
-        // View Instances
-        btnViewInstances.setOnClickListener(v -> {
-            Intent intent = new Intent(context, InstanceListActivity.class);
-            intent.putExtra("classId", yogaClass.id);
-            intent.putExtra("className", yogaClass.type);
+        private void populateSessionInfo(YogaClass session) {
+            sessionTitle.setText(session.type);
+            sessionSchedule.setText(String.format("%s at %s", session.day, session.time));
+            sessionFee.setText(String.format("£%.2f", session.price));
+            sessionCapacity.setText(String.valueOf(session.capacity));
+            sessionDuration.setText(session.duration);
+            
+            String firstLetter = session.type.length() > 0 ? 
+                session.type.substring(0, 1).toUpperCase() : "W";
+            sessionTypeIcon.setText(firstLetter);
+        }
 
-            Toast.makeText(context, "Starting InstanceListActivity for ID " + yogaClass.id, Toast.LENGTH_SHORT).show();
+        private void setupActionButtons(YogaClass session, int position) {
+            viewInstancesButton.setOnClickListener(v -> navigateToInstancesList(session));
+            editSessionButton.setOnClickListener(v -> navigateToEditSession(session));
+            deleteSessionButton.setOnClickListener(v -> confirmSessionDeletion(session, position));
+        }
 
-            context.startActivity(intent);
-        });
+        private void navigateToInstancesList(YogaClass session) {
+            Intent instancesIntent = new Intent(appContext, InstanceListActivity.class);
+            instancesIntent.putExtra("classId", session.id);
+            instancesIntent.putExtra("className", session.type);
+            
+            showUserFeedback("Opening session instances");
+            appContext.startActivity(instancesIntent);
+        }
 
-
-        // Edit Class
-        btnEdit.setOnClickListener(v -> {
+        private void navigateToEditSession(YogaClass session) {
             try {
-                Intent intent = new Intent(context, EditClassActivity.class);
-                intent.putExtra("classId", yogaClass.id);
-                context.startActivity(intent);
-                Toast.makeText(context, "Opening class to edit", Toast.LENGTH_SHORT).show();
+                Intent editIntent = new Intent(appContext, EditClassActivity.class);
+                editIntent.putExtra("classId", session.id);
+                appContext.startActivity(editIntent);
+                showUserFeedback("Opening session editor");
             } catch (Exception e) {
-                Toast.makeText(context, "Error: Unable to open class", Toast.LENGTH_SHORT).show();
+                showUserFeedback("Unable to open session editor");
             }
-        });
+        }
 
-        // Delete Class
-        btnDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle("Delete Class")
-                    .setMessage("Are you sure you want to delete this class and all its instances?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        try {
-                            int deleted = dbHelper.deleteClassById(yogaClass.id);
-                            if (deleted > 0) {
-                                classList.remove(position);
-                                notifyDataSetChanged();
-                                Toast.makeText(context, "Class deleted successfully", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(context, "Failed to delete class", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(context, "Error: Unable to delete class", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("No", null)
+        private void confirmSessionDeletion(YogaClass session, int position) {
+            new AlertDialog.Builder(appContext)
+                    .setTitle("Remove Session")
+                    .setMessage("This will permanently delete the session and all related instances. Continue?")
+                    .setPositiveButton("Delete", (dialog, which) -> performSessionDeletion(session, position))
+                    .setNegativeButton("Cancel", null)
                     .show();
-        });
+        }
 
+        private void performSessionDeletion(YogaClass session, int position) {
+            try {
+                int deletionResult = dataHelper.deleteClassById(session.id);
+                if (deletionResult > 0) {
+                    sessionsList.remove(position);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, sessionsList.size());
+                    showUserFeedback("Session removed successfully");
+                } else {
+                    showUserFeedback("Session removal failed");
+                }
+            } catch (Exception e) {
+                showUserFeedback("Error during session removal");
+            }
+        }
 
-        return convertView;
+        private void showUserFeedback(String message) {
+            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+        }
     }
 }

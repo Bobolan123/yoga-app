@@ -1,36 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_background">
 
     <LinearLayout
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:padding="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
-            android:text="Add Class Instance"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:background="@color/card_background"
+            android:elevation="2dp">
 
-        <EditText
-            android:id="@+id/etDate" android:hint="Date (yyyy-MM-dd)"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_input_add"
+                android:tint="@color/accent_color"
+                android:layout_marginEnd="12dp" />
 
-        <EditText
-            android:id="@+id/etTeacher" android:hint="Teacher"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Class Instance"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_text" />
 
-        <EditText
-            android:id="@+id/etComment" android:hint="Comment (optional)"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:minLines="2" android:inputType="textMultiLine" />
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/btnSaveInstance" android:text="Save Instance"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Instance Date"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_today"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etInstanceDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:clickable="true" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Instructor Name"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etInstructorName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName|textCapWords" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:hint="Additional Notes (Optional)"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_info_details"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etInstanceNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:lines="4"
+                    android:gravity="top" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreateInstance"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Create Instance"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/accent_color"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+
     </LinearLayout>
+
 </ScrollView>

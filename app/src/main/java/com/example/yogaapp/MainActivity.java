@@ -4,44 +4,58 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnViewClasses;
+    private LinearLayout cardManageClasses;
+    private LinearLayout cardSyncData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btnViewClasses = findViewById(R.id.btnViewClasses);
-        Button btnSyncToCloud = findViewById(R.id.btnSyncToCloud);
-
-        btnViewClasses.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ClassListActivity.class);
-            startActivity(intent);
-        });
-
-        btnSyncToCloud.setOnClickListener(v -> {
-            if (isNetworkAvailable()) {
-                FirebaseSyncHelper syncHelper = new FirebaseSyncHelper(this);
-                syncHelper.uploadAllClasses(() -> {
-                    Toast.makeText(this, "Upload complete!", Toast.LENGTH_SHORT).show();
-                });
-            } else {
-                Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
-            }
-        });
+        initializeViews();
+        setupClickListeners();
     }
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
+    private void initializeViews() {
+        cardManageClasses = findViewById(R.id.cardManageClasses);
+        cardSyncData = findViewById(R.id.cardSyncData);
     }
 
+    private void setupClickListeners() {
+        cardManageClasses.setOnClickListener(v -> navigateToClassManagement());
+        cardSyncData.setOnClickListener(v -> performCloudSync());
+    }
+
+    private void navigateToClassManagement() {
+        Intent navigationIntent = new Intent(MainActivity.this, ClassListActivity.class);
+        startActivity(navigationIntent);
+    }
+
+    private void performCloudSync() {
+        if (checkNetworkConnectivity()) {
+            FirebaseSyncHelper cloudSyncHelper = new FirebaseSyncHelper(this);
+            cloudSyncHelper.uploadAllClasses(() -> {
+                showUserMessage("Data synchronization completed successfully!");
+            });
+        } else {
+            showUserMessage("Network connection required for synchronization");
+        }
+    }
+
+    private boolean checkNetworkConnectivity() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void showUserMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
 }

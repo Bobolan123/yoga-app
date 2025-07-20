@@ -6,86 +6,166 @@ import android.content.Intent;
 import android.view.*;
 import android.widget.*;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
-public class ClassInstanceAdapter extends BaseAdapter {
-    private Context context;
-    private List<ClassInstance> instances;
-    private DatabaseHelper dbHelper;
+public class ClassInstanceAdapter extends RecyclerView.Adapter<ClassInstanceAdapter.InstanceViewHolder> {
+    private Context appContext;
+    private List<ClassInstance> instancesList;
+    private DatabaseHelper dataHelper;
 
-    public ClassInstanceAdapter(Context context, List<ClassInstance> instances, DatabaseHelper dbHelper) {
-        this.context = context;
-        this.instances = instances;
-        this.dbHelper = dbHelper;
+    public ClassInstanceAdapter(Context context, List<ClassInstance> instancesList, DatabaseHelper dataHelper) {
+        this.appContext = context;
+        this.instancesList = instancesList;
+        this.dataHelper = dataHelper;
+    }
+
+    @NonNull
+    @Override
+    public InstanceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(appContext).inflate(R.layout.item_class_instance, parent, false);
+        return new InstanceViewHolder(itemView);
     }
 
     @Override
-    public int getCount() {
-        return instances.size();
+    public void onBindViewHolder(@NonNull InstanceViewHolder holder, int position) {
+        ClassInstance currentInstance = instancesList.get(position);
+        holder.bindInstanceData(currentInstance, position);
     }
 
     @Override
-    public Object getItem(int position) {
-        return instances.get(position);
+    public int getItemCount() {
+        return instancesList.size();
     }
 
-    @Override
-    public long getItemId(int position) {
-        return instances.get(position).id;
-    }
+    public class InstanceViewHolder extends RecyclerView.ViewHolder {
+        private TextView instanceDate, instanceStatus, instanceTime, instanceParticipants, 
+                        instanceNotes, instanceStatusIcon;
+        private ImageView editInstanceButton, deleteInstanceButton;
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ClassInstance instance = instances.get(position);
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_class_instance, parent, false);
+        public InstanceViewHolder(@NonNull View itemView) {
+            super(itemView);
+            initializeViewElements();
         }
 
-        TextView tvInfo = convertView.findViewById(R.id.tvInstanceInfo);
-        ImageView btnEdit = convertView.findViewById(R.id.btnEditInstance);
-        ImageView btnDelete = convertView.findViewById(R.id.btnDeleteInstance);
+        private void initializeViewElements() {
+            instanceDate = itemView.findViewById(R.id.tvInstanceDate);
+            instanceStatus = itemView.findViewById(R.id.tvInstanceStatus);
+            instanceTime = itemView.findViewById(R.id.tvInstanceTime);
+            instanceParticipants = itemView.findViewById(R.id.tvInstanceParticipants);
+            instanceNotes = itemView.findViewById(R.id.tvInstanceNotes);
+            instanceStatusIcon = itemView.findViewById(R.id.tvInstanceStatusIcon);
+            editInstanceButton = itemView.findViewById(R.id.btnEditInstance);
+            deleteInstanceButton = itemView.findViewById(R.id.btnDeleteInstance);
+        }
 
-        tvInfo.setText(instance.toString());
+        public void bindInstanceData(ClassInstance instance, int position) {
+            populateInstanceInfo(instance);
+            setupActionButtons(instance, position);
+            setupDetailView(instance);
+        }
 
-        btnEdit.setOnClickListener(v -> {
-            Intent intent = new Intent(context, EditInstanceActivity.class);
-            intent.putExtra("instanceId", instance.id);
-            context.startActivity(intent);
-        });
+        private void populateInstanceInfo(ClassInstance instance) {
+            instanceDate.setText(formatInstanceDate(instance.date));
+            instanceStatus.setText(determineInstanceStatus(instance));
+            instanceTime.setText(instance.teacher != null ? instance.teacher : "No instructor assigned");
+            instanceParticipants.setText("Enrolled participants");
+            
+            if (instance.comment != null && !instance.comment.trim().isEmpty()) {
+                instanceNotes.setText(instance.comment);
+                instanceNotes.setVisibility(View.VISIBLE);
+            } else {
+                instanceNotes.setVisibility(View.GONE);
+            }
+            
+            instanceStatusIcon.setText("●");
+        }
 
-        btnDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle("Delete Instance")
-                    .setMessage("Are you sure you want to delete this instance?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        int result = dbHelper.deleteInstanceById(instance.id);
-                        if (result > 0) {
-                            instances.remove(position);
-                            notifyDataSetChanged();
-                            Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(context, "Failed to delete", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("No", null)
+        private String formatInstanceDate(String dateString) {
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                Date date = inputFormat.parse(dateString);
+                return outputFormat.format(date);
+            } catch (Exception e) {
+                return dateString;
+            }
+        }
+
+        private String determineInstanceStatus(ClassInstance instance) {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                Date instanceDate = dateFormat.parse(instance.date);
+                Date currentDate = new Date();
+                
+                if (instanceDate.before(currentDate)) {
+                    return "Completed";
+                } else if (instanceDate.equals(currentDate)) {
+                    return "Today";
+                } else {
+                    return "Scheduled";
+                }
+            } catch (Exception e) {
+                return "Scheduled";
+            }
+        }
+
+        private void setupActionButtons(ClassInstance instance, int position) {
+            editInstanceButton.setOnClickListener(v -> navigateToEditInstance(instance));
+            deleteInstanceButton.setOnClickListener(v -> confirmInstanceDeletion(instance, position));
+        }
+
+        private void setupDetailView(ClassInstance instance) {
+            itemView.setOnClickListener(v -> showInstanceDetails(instance));
+        }
+
+        private void navigateToEditInstance(ClassInstance instance) {
+            Intent editIntent = new Intent(appContext, EditInstanceActivity.class);
+            editIntent.putExtra("instanceId", instance.id);
+            appContext.startActivity(editIntent);
+        }
+
+        private void confirmInstanceDeletion(ClassInstance instance, int position) {
+            new AlertDialog.Builder(appContext)
+                    .setTitle("Remove Instance")
+                    .setMessage("This will permanently delete this session instance. Continue?")
+                    .setPositiveButton("Delete", (dialog, which) -> performInstanceDeletion(instance, position))
+                    .setNegativeButton("Cancel", null)
                     .show();
-        });
+        }
 
-        convertView.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle("Instance Details")
-                    .setMessage(
-                            "Date: " + instance.date + "\n" +
-                                    "Teacher: " + instance.teacher + "\n" +
-                                    "Comment: " + (instance.comment == null ? "None" : instance.comment)
-                    )
-                    .setPositiveButton("OK", null)
+        private void performInstanceDeletion(ClassInstance instance, int position) {
+            int deletionResult = dataHelper.deleteInstanceById(instance.id);
+            if (deletionResult > 0) {
+                instancesList.remove(position);
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, instancesList.size());
+                showUserFeedback("Instance removed successfully");
+            } else {
+                showUserFeedback("Instance removal failed");
+            }
+        }
+
+        private void showInstanceDetails(ClassInstance instance) {
+            String detailsMessage = "Date: " + instance.date + "\n" +
+                                   "Instructor: " + (instance.teacher != null ? instance.teacher : "Not assigned") + "\n" +
+                                   "Notes: " + (instance.comment != null && !instance.comment.trim().isEmpty() ? 
+                                              instance.comment : "No additional notes");
+            
+            new AlertDialog.Builder(appContext)
+                    .setTitle("Session Instance Details")
+                    .setMessage(detailsMessage)
+                    .setPositiveButton("Close", null)
                     .show();
-        });
+        }
 
-        return convertView;
+        private void showUserFeedback(String message) {
+            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+        }
     }
-
-
 }

@@ -1,48 +1,184 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/primary_background">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
-            android:text="Edit Yoga Class"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Spinner
-            android:id="@+id/spinnerDay"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:background="@color/card_background"
+            android:elevation="2dp">
 
-        <EditText android:id="@+id/etTime" android:hint="Time (e.g. 10:00)"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_edit"
+                android:tint="@color/accent_color"
+                android:layout_marginEnd="12dp" />
 
-        <EditText android:id="@+id/etCapacity" android:hint="Capacity"
-            android:inputType="number" android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Yoga Class"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_text" />
 
-        <EditText android:id="@+id/etDuration" android:hint="Duration (e.g. 60 min)"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+        </LinearLayout>
 
-        <EditText android:id="@+id/etPrice" android:hint="Price (£)"
-            android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <EditText android:id="@+id/etType" android:hint="Type (e.g. Flow Yoga)"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Schedule Day"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
-        <EditText android:id="@+id/etDescription" android:hint="Description (Optional)"
-            android:inputType="textMultiLine" android:minLines="2" android:maxLines="4"
-            android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <AutoCompleteTextView
+                    android:id="@+id/actvEditScheduleDay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
 
-        <Button android:id="@+id/btnUpdate" android:text="Update Class"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Class Time"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_recent_history"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Maximum Capacity"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassCapacity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Class Duration"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_agenda"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassDuration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Class Fee"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:prefixText="£"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassFee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="Class Type"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                app:startIconDrawable="@android:drawable/ic_menu_preferences"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:hint="Class Description (Optional)"
+                app:boxStrokeColor="@color/accent_color"
+                app:hintTextColor="@color/accent_color"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEditClassDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:lines="3"
+                    android:gravity="top" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUpdateClass"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Update Class"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/accent_color"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+
     </LinearLayout>
+
 </ScrollView>

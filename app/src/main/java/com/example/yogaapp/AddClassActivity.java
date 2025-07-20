@@ -49,19 +49,82 @@ public class AddClassActivity extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> {
             if (validateInputs()) {
-                saveData();
+                String summary = "Day: " + spinnerDay.getSelectedItem().toString() + "\n" +
+                        "Time: " + etTime.getText().toString().trim() + "\n" +
+                        "Capacity: " + etCapacity.getText().toString().trim() + "\n" +
+                        "Duration: " + etDuration.getText().toString().trim() + "\n" +
+                        "Price: " + etPrice.getText().toString().trim() + "\n" +
+                        "Type: " + etType.getText().toString().trim() + "\n" +
+                        "Description: " + etDescription.getText().toString().trim();
+
+                new androidx.appcompat.app.AlertDialog.Builder(AddClassActivity.this)
+                        .setTitle("Confirm Class Details")
+                        .setMessage(summary)
+                        .setPositiveButton("Confirm", (dialog, which) -> saveData())
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
+
+
     }
 
     private boolean validateInputs() {
-        return spinnerDay.getSelectedItemPosition() != AdapterView.INVALID_POSITION &&
-                !etTime.getText().toString().isEmpty() &&
-                !etCapacity.getText().toString().isEmpty() &&
-                !etDuration.getText().toString().isEmpty() &&
-                !etPrice.getText().toString().isEmpty() &&
-                !etType.getText().toString().isEmpty();
+        if (spinnerDay.getSelectedItemPosition() == AdapterView.INVALID_POSITION) {
+            Toast.makeText(this, "Please select a day", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (etTime.getText().toString().trim().isEmpty()) {
+            etTime.setError("Time is required");
+            return false;
+        }
+
+        if (etCapacity.getText().toString().trim().isEmpty()) {
+            etCapacity.setError("Capacity is required");
+            return false;
+        } else {
+            try {
+                int capacity = Integer.parseInt(etCapacity.getText().toString().trim());
+                if (capacity <= 0) {
+                    etCapacity.setError("Capacity must be a positive number");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                etCapacity.setError("Invalid number");
+                return false;
+            }
+        }
+
+        if (etDuration.getText().toString().trim().isEmpty()) {
+            etDuration.setError("Duration is required");
+            return false;
+        }
+
+        if (etPrice.getText().toString().trim().isEmpty()) {
+            etPrice.setError("Price is required");
+            return false;
+        } else {
+            try {
+                float price = Float.parseFloat(etPrice.getText().toString().trim());
+                if (price < 0) {
+                    etPrice.setError("Price must be non-negative");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                etPrice.setError("Invalid price");
+                return false;
+            }
+        }
+
+        if (etType.getText().toString().trim().isEmpty()) {
+            etType.setError("Type is required");
+            return false;
+        }
+
+        return true;
     }
+
 
     private void saveData() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();

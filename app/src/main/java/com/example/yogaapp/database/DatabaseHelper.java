@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.database;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import com.example.yogaapp.models.YogaClass;
+import com.example.yogaapp.models.ClassInstance;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "YogaClasses.db";

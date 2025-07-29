@@ -17,15 +17,15 @@
         android:theme="@style/Theme.YogaApp"
         tools:targetApi="31">
 
-        <activity android:name=".EditInstanceActivity" android:exported="false" />
-        <activity android:name=".InstanceListActivity" android:exported="false" />
-        <activity android:name=".AddClassInstanceActivity" android:exported="false" />
-        <activity android:name=".EditClassActivity" android:exported="false" />
-        <activity android:name=".ClassListActivity" android:exported="false" />
-        <activity android:name=".AddClassActivity" android:exported="false" />
+        <activity android:name=".activities.EditInstanceActivity" android:exported="false" />
+        <activity android:name=".activities.InstanceListActivity" android:exported="false" />
+        <activity android:name=".activities.AddClassInstanceActivity" android:exported="false" />
+        <activity android:name=".activities.EditClassActivity" android:exported="false" />
+        <activity android:name=".activities.ClassListActivity" android:exported="false" />
+        <activity android:name=".activities.AddClassActivity" android:exported="false" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

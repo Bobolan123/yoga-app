@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,7 +11,13 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.yogaapp.R;
 import java.util.List;
+
+import com.example.yogaapp.models.YogaClass;
+import com.example.yogaapp.database.DatabaseHelper;
+import com.example.yogaapp.activities.InstanceListActivity;
+import com.example.yogaapp.activities.EditClassActivity;
 
 public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.SessionViewHolder> {
     private Context appContext;

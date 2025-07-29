@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,8 +10,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import com.example.yogaapp.R;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import com.example.yogaapp.models.ClassInstance;
+import com.example.yogaapp.database.DatabaseHelper;
+import com.example.yogaapp.adapters.ClassInstanceAdapter;
 
 public class InstanceListActivity extends AppCompatActivity {
 

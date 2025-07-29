@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -9,10 +9,15 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.yogaapp.R;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import com.example.yogaapp.models.ClassInstance;
+import com.example.yogaapp.database.DatabaseHelper;
+import com.example.yogaapp.activities.EditInstanceActivity;
 
 public class ClassInstanceAdapter extends RecyclerView.Adapter<ClassInstanceAdapter.InstanceViewHolder> {
     private Context appContext;

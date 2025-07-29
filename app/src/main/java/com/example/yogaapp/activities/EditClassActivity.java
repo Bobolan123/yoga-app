@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.activities;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -11,8 +11,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.yogaapp.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import com.example.yogaapp.database.DatabaseHelper;
 
 public class EditClassActivity extends AppCompatActivity {
 

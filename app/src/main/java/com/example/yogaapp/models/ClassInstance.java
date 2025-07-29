@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.models;
 
 public class ClassInstance {
     public int id;

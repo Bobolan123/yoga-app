@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,8 +12,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import com.example.yogaapp.R;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.yogaapp.models.YogaClass;
+import com.example.yogaapp.database.DatabaseHelper;
+import com.example.yogaapp.adapters.YogaClassAdapter;
 
 public class ClassListActivity extends AppCompatActivity {
     private RecyclerView sessionRecyclerView;

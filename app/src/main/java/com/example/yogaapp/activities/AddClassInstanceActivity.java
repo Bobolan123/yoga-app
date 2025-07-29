@@ -1,4 +1,4 @@
-package com.example.yogaapp;
+package com.example.yogaapp.activities;
 
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.yogaapp.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -17,6 +18,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+
+import com.example.yogaapp.database.DatabaseHelper;
 
 public class AddClassInstanceActivity extends AppCompatActivity {
 
